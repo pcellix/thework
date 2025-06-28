@@ -1,0 +1,1161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Self-Inquiry Tool</title>
+    <meta name="description" content="Interactive tool for self-inquiry - The Work and IFS">
+    <meta name="theme-color" content="#2563eb">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+            line-height: 1.5;
+            color: #1e293b;
+            background: #f1f5f9;
+            min-height: 100vh;
+            padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+            font-size: 16px;
+        }
+
+        .container {
+            max-width: 428px;
+            margin: 0 auto;
+            padding: 16px;
+        }
+
+        /* Responsive design */
+        @media (min-width: 768px) {
+            .container { max-width: 680px; padding: 24px; }
+            .header { padding: 32px 40px; }
+            .header h1 { font-size: 32px; }
+            .step-card { padding: 32px; }
+            .text-area { min-height: 120px; }
+            .turnaround-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 20px; }
+        }
+
+        @media (min-width: 1024px) {
+            .container { max-width: 800px; padding: 32px; }
+            .header { padding: 40px; }
+            .step-card { padding: 40px; }
+            .text-area { min-height: 140px; }
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 24px;
+            background: white;
+            padding: 24px 20px;
+            border-radius: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .header h1 {
+            font-size: 24px;
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 8px;
+        }
+
+        .header p {
+            color: #64748b;
+            font-size: 14px;
+        }
+
+        .method-selector {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .method-selector h2 {
+            font-size: 18px;
+            font-weight: 600;
+            color: #0f172a;
+            margin-bottom: 16px;
+            text-align: center;
+        }
+
+        .method-grid {
+            display: grid;
+            gap: 16px;
+        }
+
+        .method-card {
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 16px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            background: #fafafa;
+            margin-bottom: 16px;
+        }
+
+        .method-card.selected {
+            border-color: #2563eb;
+            background: #eff6ff;
+        }
+
+        .method-card h3 {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 8px;
+        }
+
+        .method-card p {
+            font-size: 14px;
+            color: #64748b;
+            line-height: 1.4;
+        }
+
+        .intro-card {
+            background: linear-gradient(135deg, #fef3c7, #fbbf24);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+            color: #92400e;
+            position: relative;
+        }
+
+        .intro-title {
+            font-weight: 700;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .method-start-over {
+            padding: 6px 12px;
+            border: 1px solid #dc2626;
+            border-radius: 6px;
+            background: #fee2e2;
+            color: #dc2626;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-left: 16px;
+        }
+
+        .method-start-over:hover {
+            background: #fecaca;
+        }
+
+        .progress-container {
+            background: white;
+            padding: 16px;
+            border-radius: 12px;
+            margin-bottom: 16px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .progress-bar {
+            background: #e2e8f0;
+            height: 6px;
+            border-radius: 3px;
+            overflow: hidden;
+            margin-bottom: 8px;
+        }
+
+        .progress-fill {
+            background: linear-gradient(90deg, #2563eb, #1d4ed8);
+            height: 100%;
+            transition: width 0.3s ease;
+        }
+
+        .progress-text {
+            font-size: 12px;
+            color: #64748b;
+            text-align: center;
+        }
+
+        .step-card {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            transition: transform 0.2s ease;
+        }
+
+        .step-card.active {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+        }
+
+        .step-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .step-number {
+            background: #2563eb;
+            color: white;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 14px;
+            margin-right: 12px;
+            flex-shrink: 0;
+        }
+
+        .step-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #0f172a;
+        }
+
+        .input-group {
+            margin-bottom: 16px;
+        }
+
+        .input-label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            color: #374151;
+            margin-bottom: 8px;
+        }
+
+        .text-input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 16px;
+            background: #fafafa;
+            transition: all 0.2s ease;
+            resize: none;
+            min-height: 50px;
+            font-family: inherit;
+        }
+
+        .text-input:focus {
+            outline: none;
+            border-color: #2563eb;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        .text-area {
+            min-height: 100px;
+        }
+
+        .question-card {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+
+        .question-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 8px;
+        }
+
+        .question-subtitle {
+            font-size: 14px;
+            color: #64748b;
+            margin-bottom: 12px;
+        }
+
+        .turnaround-card {
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+
+        .turnaround-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #166534;
+            margin-bottom: 8px;
+        }
+
+        .ifs-card {
+            background: #fef7ff;
+            border: 1px solid #d8b4fe;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+
+        .ifs-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #7c3aed;
+            margin-bottom: 8px;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-bottom: 12px;
+            touch-action: manipulation;
+        }
+
+        .btn-primary {
+            background: #2563eb;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #1d4ed8;
+        }
+
+        .btn-secondary {
+            background: #f1f5f9;
+            color: #475569;
+            border: 1px solid #e2e8f0;
+        }
+
+        .btn-secondary:hover {
+            background: #e2e8f0;
+        }
+
+        .btn:disabled {
+            background: #e2e8f0;
+            color: #94a3b8;
+            cursor: not-allowed;
+        }
+
+        .btn-row {
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn-row .btn {
+            margin-bottom: 0;
+        }
+
+        .step-actions {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .step-actions .btn {
+            margin-bottom: 0;
+        }
+
+        .summary-card {
+            background: #fffbeb;
+            border: 1px solid #fbbf24;
+            border-radius: 16px;
+            padding: 20px;
+            margin-top: 16px;
+        }
+
+        .summary-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #92400e;
+            margin-bottom: 16px;
+        }
+
+        .summary-section {
+            margin-bottom: 16px;
+        }
+
+        .summary-section h3 {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 8px;
+            border-bottom: 1px solid #e2e8f0;
+            padding-bottom: 4px;
+        }
+
+        .summary-content {
+            font-size: 14px;
+            color: #475569;
+            line-height: 1.6;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .fade-in {
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Self-Inquiry Tool</h1>
+            <p>Choose your preferred method for exploring thoughts and inner experiences</p>
+        </div>
+
+        <!-- Method Selection -->
+        <div class="method-selector" id="methodSelector">
+            <h2>Choose Your Inquiry Method</h2>
+            <div class="method-grid">
+                <div class="method-card" onclick="selectMethod('work')" id="workCard">
+                    <h3>Byron Katie's The Work</h3>
+                    <p>Four questions and turnarounds to investigate stressful thoughts and beliefs</p>
+                </div>
+                <div class="method-card" onclick="selectMethod('ifs')" id="ifsCard">
+                    <h3>IFS Parts Work</h3>
+                    <p>Dialogue with protective parts to understand their role and concerns</p>
+                </div>
+            </div>
+            <button class="btn btn-primary" onclick="startInquiry()" id="startBtn" disabled>Begin Inquiry</button>
+        </div>
+
+        <!-- Dynamic intro card -->
+        <div class="intro-card hidden" id="introCard">
+            <div class="intro-title">
+                <span id="introTitle">How to begin:</span>
+                <button class="method-start-over" onclick="resetApp()">Start Over</button>
+            </div>
+            <div id="introText"></div>
+        </div>
+
+        <div class="progress-container hidden" id="progressContainer">
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+            </div>
+            <div class="progress-text" id="progressText">Step 1</div>
+        </div>
+
+        <!-- Dynamic content container -->
+        <div id="dynamicContent"></div>
+
+        <!-- Summary -->
+        <div class="summary-card hidden" id="summary">
+            <h2 class="summary-title" id="summaryTitle">Your Inquiry Summary</h2>
+            <div id="summaryContent"></div>
+            <div class="btn-row">
+                <button class="btn btn-secondary" onclick="resetApp()">Start Over</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let selectedMethod = null;
+        let currentStep = 1;
+        let maxSteps = 6;
+        const answers = {};
+        const stepHistory = [];
+
+        const methods = {
+            work: {
+                title: "Byron Katie's The Work",
+                intro: "Think of a stressful thought about someone or something. Write it as a simple, specific statement. Then work through each question honestly.",
+                steps: 6,
+                initialPrompt: "Write a specific belief or thought that causes you stress:",
+                initialPlaceholder: "Example: My boss doesn't respect me..."
+            },
+            ifs: {
+                title: "IFS Parts Work",
+                intro: "Think of a part of you that feels protective, reactive, or intense. We'll explore this part with curiosity and compassion.",
+                steps: 7,
+                initialPrompt: "Which part would you like to work with?",
+                initialPlaceholder: "There's a part of me that gets defensive when criticized..."
+            }
+        };
+
+        function selectMethod(method) {
+            selectedMethod = method;
+            
+            document.getElementById('workCard').classList.remove('selected');
+            document.getElementById('ifsCard').classList.remove('selected');
+            document.getElementById(method + 'Card').classList.add('selected');
+            
+            document.getElementById('startBtn').disabled = false;
+        }
+
+        function startInquiry() {
+            if (!selectedMethod) return;
+            
+            const method = methods[selectedMethod];
+            maxSteps = method.steps;
+            
+            document.getElementById('methodSelector').classList.add('hidden');
+            document.getElementById('introCard').classList.remove('hidden');
+            document.getElementById('progressContainer').classList.remove('hidden');
+            
+            document.getElementById('introTitle').textContent = method.title;
+            document.getElementById('introText').textContent = method.intro;
+            
+            generateStep1();
+            updateProgress();
+        }
+
+        function generateStep1() {
+            const method = methods[selectedMethod];
+            const content = `
+                <div class="step-card active fade-in" id="step1">
+                    <div class="step-header">
+                        <div class="step-number">1</div>
+                        <div class="step-title">Your ${selectedMethod === 'work' ? 'Stressful Thought' : 'Part to Work With'}</div>
+                    </div>
+                    <div class="input-group">
+                        <label class="input-label">${method.initialPrompt}</label>
+                        <textarea 
+                            class="text-input text-area" 
+                            id="initialInput" 
+                            placeholder="${method.initialPlaceholder}"
+                            rows="3"
+                        ></textarea>
+                    </div>
+                    <div class="step-actions">
+                        <button class="btn btn-primary" onclick="nextStep()" id="step1Next" disabled>Continue</button>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('dynamicContent').innerHTML = content;
+            
+            document.getElementById('initialInput').addEventListener('input', function() {
+                document.getElementById('step1Next').disabled = this.value.trim().length < 10;
+            });
+        }
+
+        function updateProgress() {
+            const progress = (currentStep / maxSteps) * 100;
+            document.getElementById('progressFill').style.width = progress + '%';
+            document.getElementById('progressText').textContent = `Step ${currentStep} of ${maxSteps}`;
+        }
+
+        function nextStep() {
+            saveCurrentStepData();
+            stepHistory.push({
+                step: currentStep,
+                content: document.getElementById('dynamicContent').innerHTML,
+                answers: Object.assign({}, answers)
+            });
+
+            currentStep++;
+            
+            let content = '';
+            if (selectedMethod === 'work') {
+                content = generateWorkSteps();
+            } else if (selectedMethod === 'ifs') {
+                content = generateIFSSteps();
+            }
+            
+            document.getElementById('dynamicContent').innerHTML = content;
+            addEventListeners();
+            updateProgress();
+            
+            document.getElementById('dynamicContent').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        function saveCurrentStepData() {
+            if (currentStep === 1) {
+                answers.initial = document.getElementById('initialInput').value.trim();
+            } else if (selectedMethod === 'work') {
+                if (currentStep === 4) {
+                    answers.q3 = document.getElementById('q3Response').value.trim();
+                } else if (currentStep === 5) {
+                    answers.q4 = document.getElementById('q4Response').value.trim();
+                }
+            } else if (selectedMethod === 'ifs') {
+                if (currentStep === 2) {
+                    answers.ifs2 = document.getElementById('ifs2Response').value.trim();
+                } else if (currentStep === 3) {
+                    answers.ifs3 = document.getElementById('ifs3Response').value.trim();
+                    const unblendEl = document.getElementById('ifs3Unblend');
+                    if (unblendEl) answers.ifs3Unblend = unblendEl.value.trim();
+                } else if (currentStep === 4) {
+                    answers.ifs4 = document.getElementById('ifs4Response').value.trim();
+                } else if (currentStep === 5) {
+                    answers.ifs5 = document.getElementById('ifs5Response').value.trim();
+                } else if (currentStep === 6) {
+                    answers.ifs6 = document.getElementById('ifs6Response').value.trim();
+                }
+            }
+        }
+
+        function generateWorkSteps() {
+            if (currentStep === 2) {
+                return generateWorkQuestion(1, "Is it true?", "Yes or no. If no, move to question 3.");
+            } else if (currentStep === 3) {
+                return generateWorkQuestion(2, "Can you absolutely know that it's true?", "Really investigate. Can you be 100% certain?");
+            } else if (currentStep === 4) {
+                return generateWorkQuestion3();
+            } else if (currentStep === 5) {
+                return generateWorkQuestion4();
+            } else if (currentStep === 6) {
+                return generateWorkTurnarounds();
+            }
+        }
+
+        function generateWorkQuestion(num, title, subtitle) {
+            return `
+                <div class="step-card active fade-in" id="step${currentStep}">
+                    <div class="step-header">
+                        <div class="step-number">${currentStep}</div>
+                        <div class="step-title">Question ${num}</div>
+                    </div>
+                    <div class="question-card">
+                        <div class="question-title">${title}</div>
+                        <div class="question-subtitle">${subtitle}</div>
+                    </div>
+                    <div class="btn-row">
+                        <button class="btn btn-secondary" onclick="setAnswerAndContinue(${currentStep}, 'no')" id="q${num}No">No</button>
+                        <button class="btn btn-primary" onclick="setAnswerAndContinue(${currentStep}, 'yes')" id="q${num}Yes">Yes</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function generateWorkQuestion3() {
+            return `
+                <div class="step-card active fade-in" id="step4">
+                    <div class="step-header">
+                        <div class="step-number">4</div>
+                        <div class="step-title">Question 3</div>
+                    </div>
+                    <div class="question-card">
+                        <div class="question-title">How do you react when you believe that thought?</div>
+                        <div class="question-subtitle">What happens to you? How do you feel? How do you treat yourself and others?</div>
+                    </div>
+                    <div class="input-group">
+                        <label class="input-label">Your response:</label>
+                        <textarea class="text-input text-area" id="q3Response" placeholder="Describe your feelings, behaviors, physical sensations..." rows="4"></textarea>
+                    </div>
+                    <div class="step-actions">
+                        <button class="btn btn-secondary" onclick="goToPreviousStep()" id="backBtn">← Back</button>
+                        <button class="btn btn-primary" onclick="nextStep()" id="step4Next" disabled>Continue</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function generateWorkQuestion4() {
+            return `
+                <div class="step-card active fade-in" id="step5">
+                    <div class="step-header">
+                        <div class="step-number">5</div>
+                        <div class="step-title">Question 4</div>
+                    </div>
+                    <div class="question-card">
+                        <div class="question-title">Who would you be without that thought?</div>
+                        <div class="question-subtitle">Imagine the situation without this stressful thought. How would you feel? How would you act?</div>
+                    </div>
+                    <div class="input-group">
+                        <label class="input-label">Your response:</label>
+                        <textarea class="text-input text-area" id="q4Response" placeholder="Describe who you would be, how you would feel and act..." rows="4"></textarea>
+                    </div>
+                    <div class="step-actions">
+                        <button class="btn btn-secondary" onclick="goToPreviousStep()" id="backBtn">← Back</button>
+                        <button class="btn btn-primary" onclick="nextStep()" id="step5Next" disabled>Continue</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function generateWorkTurnarounds() {
+            return `
+                <div class="step-card active fade-in" id="step6">
+                    <div class="step-header">
+                        <div class="step-number">6</div>
+                        <div class="step-title">Turnarounds</div>
+                    </div>
+                    
+                    <div class="turnaround-grid">
+                        <div class="turnaround-card">
+                            <div class="turnaround-title">Turnaround to the opposite:</div>
+                            <div class="input-group">
+                                <textarea class="text-input text-area" id="turnaround1" placeholder="Turn your thought to its opposite..." rows="2"></textarea>
+                            </div>
+                            <div class="input-group">
+                                <label class="input-label">Find 3 genuine examples of how this might be true:</label>
+                                <textarea class="text-input text-area" id="turnaround1Examples" placeholder="1. &#10;2. &#10;3. " rows="4"></textarea>
+                            </div>
+                        </div>
+
+                        <div class="turnaround-card">
+                            <div class="turnaround-title">Turnaround to yourself:</div>
+                            <div class="input-group">
+                                <textarea class="text-input text-area" id="turnaround2" placeholder="Turn it around to yourself..." rows="2"></textarea>
+                            </div>
+                            <div class="input-group">
+                                <label class="input-label">Find 3 genuine examples:</label>
+                                <textarea class="text-input text-area" id="turnaround2Examples" placeholder="1. &#10;2. &#10;3. " rows="4"></textarea>
+                            </div>
+                        </div>
+
+                        <div class="turnaround-card">
+                            <div class="turnaround-title">Turnaround to the other person (if applicable):</div>
+                            <div class="input-group">
+                                <textarea class="text-input text-area" id="turnaround3" placeholder="I don't respect my boss..." rows="2"></textarea>
+                            </div>
+                            <div class="input-group">
+                                <label class="input-label">Find 3 genuine examples:</label>
+                                <textarea class="text-input text-area" id="turnaround3Examples" placeholder="1. &#10;2. &#10;3. " rows="4"></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="step-actions">
+                        <button class="btn btn-secondary" onclick="goToPreviousStep()" id="backBtn">← Back</button>
+                        <button class="btn btn-primary" onclick="showSummary()">Complete The Work</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function generateIFSSteps() {
+            if (currentStep === 2) {
+                return generateIFSStep2();
+            } else if (currentStep === 3) {
+                return generateIFSStep3();
+            } else if (currentStep === 4) {
+                return generateIFSStep4();
+            } else if (currentStep === 5) {
+                return generateIFSStep5();
+            } else if (currentStep === 6) {
+                return generateIFSStep6();
+            } else if (currentStep === 7) {
+                return generateIFSStep7();
+            }
+        }
+
+        function generateIFSStep2() {
+            return `
+                <div class="step-card active fade-in" id="step2">
+                    <div class="step-header">
+                        <div class="step-number">2</div>
+                        <div class="step-title">How You Notice This Part</div>
+                    </div>
+                    <div class="ifs-card">
+                        <div class="ifs-title">How do you notice this part?</div>
+                        <div class="question-subtitle">Where do you sense this part - in your body, as an image, a voice, a color, or located somewhere around you? How does it show up for you?</div>
+                    </div>
+                    <div class="input-group">
+                        <label class="input-label">Your response:</label>
+                        <textarea class="text-input text-area" id="ifs2Response" placeholder="I notice this part as... / I see this part as... / I hear this part..." rows="3"></textarea>
+                    </div>
+                    <div class="step-actions">
+                        <button class="btn btn-secondary" onclick="goToPreviousStep()" id="backBtn">← Back</button>
+                        <button class="btn btn-primary" onclick="nextStep()" id="step2Next" disabled>Continue</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function generateIFSStep3() {
+            return `
+                <div class="step-card active fade-in" id="step3">
+                    <div class="step-header">
+                        <div class="step-number">3</div>
+                        <div class="step-title">How You Feel Toward This Part</div>
+                    </div>
+                    <div class="ifs-card">
+                        <div class="ifs-title">How do you feel toward this part right now?</div>
+                        <div class="question-subtitle">Notice if you feel curious, compassionate, calm - or if other feelings come up like frustration, anger, or judgment.</div>
+                    </div>
+                    <div class="input-group">
+                        <label class="input-label">Your response:</label>
+                        <textarea class="text-input text-area" id="ifs3Response" placeholder="Toward this part, I feel..." rows="3"></textarea>
+                    </div>
+                    <div class="ifs-card" style="background: #fef3c7; border-color: #f59e0b;">
+                        <div class="ifs-title" style="color: #92400e;">If you notice anything other than curiosity or compassion:</div>
+                        <div class="question-subtitle">Ask any judgmental, frustrated, or worried parts if they would be willing to step back so you can get to know this part with more openness.</div>
+                        <textarea class="text-input text-area" id="ifs3Unblend" placeholder="Other parts that need to step back..." rows="2"></textarea>
+                    </div>
+                    <div class="step-actions">
+                        <button class="btn btn-secondary" onclick="goToPreviousStep()" id="backBtn">← Back</button>
+                        <button class="btn btn-primary" onclick="nextStep()" id="step3Next" disabled>Continue</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function generateIFSStep4() {
+            return `
+                <div class="step-card active fade-in" id="step4">
+                    <div class="step-header">
+                        <div class="step-number">4</div>
+                        <div class="step-title">What This Part Wants You to Know</div>
+                    </div>
+                    <div class="ifs-card">
+                        <div class="ifs-title">What does this part want you to know?</div>
+                        <div class="question-subtitle">Listen to any message, story, or information this part wants to share with you.</div>
+                    </div>
+                    <div class="input-group">
+                        <label class="input-label">Your response:</label>
+                        <textarea class="text-input text-area" id="ifs4Response" placeholder="This part wants me to know..." rows="4"></textarea>
+                    </div>
+                    <div class="step-actions">
+                        <button class="btn btn-secondary" onclick="goToPreviousStep()" id="backBtn">← Back</button>
+                        <button class="btn btn-primary" onclick="nextStep()" id="step4Next" disabled>Continue</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function generateIFSStep5() {
+            return `
+                <div class="step-card active fade-in" id="step5">
+                    <div class="step-header">
+                        <div class="step-number">5</div>
+                        <div class="step-title">Understanding This Part's Fear</div>
+                    </div>
+                    <div class="ifs-card">
+                        <div class="ifs-title">What is this part afraid would happen if it wasn't there?</div>
+                        <div class="question-subtitle">Notice what this part fears would occur if it stopped doing its protective job.</div>
+                    </div>
+                    <div class="input-group">
+                        <label class="input-label">Your response:</label>
+                        <textarea class="text-input text-area" id="ifs5Response" placeholder="This part is afraid that if it wasn't there..." rows="4"></textarea>
+                    </div>
+                    <div class="step-actions">
+                        <button class="btn btn-secondary" onclick="goToPreviousStep()" id="backBtn">← Back</button>
+                        <button class="btn btn-primary" onclick="nextStep()" id="step5Next" disabled>Continue</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function generateIFSStep6() {
+            return `
+                <div class="step-card active fade-in" id="step6">
+                    <div class="step-header">
+                        <div class="step-number">6</div>
+                        <div class="step-title">What This Part Wants From You</div>
+                    </div>
+                    <div class="ifs-card">
+                        <div class="ifs-title">What does this part want from you in the future?</div>
+                        <div class="question-subtitle">What would help this part feel supported? What does it need from you going forward?</div>
+                    </div>
+                    <div class="input-group">
+                        <label class="input-label">Your response:</label>
+                        <textarea class="text-input text-area" id="ifs6Response" placeholder="This part wants me to..." rows="4"></textarea>
+                    </div>
+                    <div class="step-actions">
+                        <button class="btn btn-secondary" onclick="goToPreviousStep()" id="backBtn">← Back</button>
+                        <button class="btn btn-primary" onclick="nextStep()" id="step6Next" disabled>Continue</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function generateIFSStep7() {
+            return `
+                <div class="step-card active fade-in" id="step7">
+                    <div class="step-header">
+                        <div class="step-number">7</div>
+                        <div class="step-title">Appreciation and Gratitude</div>
+                    </div>
+                    <div class="ifs-card">
+                        <div class="ifs-title">What do you appreciate about this part?</div>
+                        <div class="question-subtitle">Express genuine gratitude for how this part has tried to help you, even if the methods feel outdated.</div>
+                    </div>
+                    <div class="input-group">
+                        <label class="input-label">Your response:</label>
+                        <textarea class="text-input text-area" id="ifs7Response" placeholder="I appreciate this part because..." rows="4"></textarea>
+                    </div>
+                    <div class="step-actions">
+                        <button class="btn btn-secondary" onclick="goToPreviousStep()" id="backBtn">← Back</button>
+                        <button class="btn btn-primary" onclick="showSummary()">Complete IFS Work</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function addEventListeners() {
+            if (selectedMethod === 'work') {
+                if (currentStep === 4) {
+                    document.getElementById('q3Response').addEventListener('input', function() {
+                        document.getElementById('step4Next').disabled = this.value.trim().length < 5;
+                    });
+                } else if (currentStep === 5) {
+                    document.getElementById('q4Response').addEventListener('input', function() {
+                        document.getElementById('step5Next').disabled = this.value.trim().length < 5;
+                    });
+                }
+            } else if (selectedMethod === 'ifs') {
+                if (currentStep === 2) {
+                    document.getElementById('ifs2Response').addEventListener('input', function() {
+                        document.getElementById('step2Next').disabled = this.value.trim().length < 5;
+                    });
+                } else if (currentStep === 3) {
+                    document.getElementById('ifs3Response').addEventListener('input', function() {
+                        document.getElementById('step3Next').disabled = this.value.trim().length < 5;
+                    });
+                } else if (currentStep === 4) {
+                    document.getElementById('ifs4Response').addEventListener('input', function() {
+                        document.getElementById('step4Next').disabled = this.value.trim().length < 5;
+                    });
+                } else if (currentStep === 5) {
+                    document.getElementById('ifs5Response').addEventListener('input', function() {
+                        document.getElementById('step5Next').disabled = this.value.trim().length < 5;
+                    });
+                } else if (currentStep === 6) {
+                    document.getElementById('ifs6Response').addEventListener('input', function() {
+                        document.getElementById('step6Next').disabled = this.value.trim().length < 5;
+                    });
+                }
+            }
+        }
+
+        function setAnswerAndContinue(step, answer) {
+            answers['q' + (step - 1)] = answer;
+            
+            const yesBtn = document.getElementById('q' + (step - 1) + 'Yes');
+            const noBtn = document.getElementById('q' + (step - 1) + 'No');
+            
+            if (answer === 'yes') {
+                yesBtn.style.background = '#2563eb';
+                yesBtn.style.color = 'white';
+                noBtn.style.background = '#f1f5f9';
+                noBtn.style.color = '#475569';
+            } else {
+                noBtn.style.background = '#2563eb';
+                noBtn.style.color = 'white';
+                yesBtn.style.background = '#f1f5f9';
+                yesBtn.style.color = '#475569';
+            }
+            
+            setTimeout(() => {
+                nextStep();
+            }, 800);
+        }
+
+        function goToPreviousStep() {
+            if (stepHistory.length === 0) return;
+            
+            const previousStep = stepHistory.pop();
+            currentStep = previousStep.step;
+            
+            document.getElementById('dynamicContent').innerHTML = previousStep.content;
+            
+            // Clear current answers and restore previous state
+            for (let key in answers) {
+                delete answers[key];
+            }
+            Object.assign(answers, previousStep.answers);
+            
+            addEventListeners();
+            restoreInputValues();
+            updateProgress();
+            
+            document.getElementById('dynamicContent').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        function restoreInputValues() {
+            if (currentStep === 1 && answers.initial) {
+                const input = document.getElementById('initialInput');
+                if (input) {
+                    input.value = answers.initial;
+                    document.getElementById('step1Next').disabled = false;
+                }
+            } else if (selectedMethod === 'work') {
+                if (currentStep === 4 && answers.q3) {
+                    const input = document.getElementById('q3Response');
+                    if (input) {
+                        input.value = answers.q3;
+                        document.getElementById('step4Next').disabled = false;
+                    }
+                } else if (currentStep === 5 && answers.q4) {
+                    const input = document.getElementById('q4Response');
+                    if (input) {
+                        input.value = answers.q4;
+                        document.getElementById('step5Next').disabled = false;
+                    }
+                }
+            } else if (selectedMethod === 'ifs') {
+                if (currentStep === 2 && answers.ifs2) {
+                    const input = document.getElementById('ifs2Response');
+                    if (input) {
+                        input.value = answers.ifs2;
+                        document.getElementById('step2Next').disabled = false;
+                    }
+                } else if (currentStep === 3 && answers.ifs3) {
+                    const input1 = document.getElementById('ifs3Response');
+                    const input2 = document.getElementById('ifs3Unblend');
+                    if (input1) {
+                        input1.value = answers.ifs3;
+                        if (input2 && answers.ifs3Unblend) input2.value = answers.ifs3Unblend;
+                        document.getElementById('step3Next').disabled = false;
+                    }
+                } else if (currentStep === 4 && answers.ifs4) {
+                    const input = document.getElementById('ifs4Response');
+                    if (input) {
+                        input.value = answers.ifs4;
+                        document.getElementById('step4Next').disabled = false;
+                    }
+                } else if (currentStep === 5 && answers.ifs5) {
+                    const input = document.getElementById('ifs5Response');
+                    if (input) {
+                        input.value = answers.ifs5;
+                        document.getElementById('step5Next').disabled = false;
+                    }
+                } else if (currentStep === 6 && answers.ifs6) {
+                    const input = document.getElementById('ifs6Response');
+                    if (input) {
+                        input.value = answers.ifs6;
+                        document.getElementById('step6Next').disabled = false;
+                    }
+                }
+            }
+        }
+
+        function showSummary() {
+            if (selectedMethod === 'work') {
+                answers.turnaround1 = document.getElementById('turnaround1').value.trim();
+                answers.turnaround1Examples = document.getElementById('turnaround1Examples').value.trim();
+                answers.turnaround2 = document.getElementById('turnaround2').value.trim();
+                answers.turnaround2Examples = document.getElementById('turnaround2Examples').value.trim();
+                answers.turnaround3 = document.getElementById('turnaround3').value.trim();
+                answers.turnaround3Examples = document.getElementById('turnaround3Examples').value.trim();
+            } else if (selectedMethod === 'ifs') {
+                answers.ifs7 = document.getElementById('ifs7Response').value.trim();
+            }
+            
+            document.getElementById('dynamicContent').innerHTML = '';
+            generateSummary();
+            document.getElementById('summary').classList.remove('hidden');
+            document.getElementById('summary').classList.add('fade-in');
+            
+            document.getElementById('progressFill').style.width = '100%';
+            document.getElementById('progressText').textContent = 'Complete';
+            
+            document.getElementById('summary').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function generateSummary() {
+            const summaryContent = document.getElementById('summaryContent');
+            const summaryTitle = document.getElementById('summaryTitle');
+            
+            if (selectedMethod === 'work') {
+                summaryTitle.textContent = "Your Work Summary";
+                summaryContent.innerHTML = `
+                    <div class="summary-section">
+                        <h3>Your Original Thought</h3>
+                        <div class="summary-content">"${answers.initial}"</div>
+                    </div>
+                    
+                    <div class="summary-section">
+                        <h3>The Four Questions</h3>
+                        <div class="summary-content">
+                            <strong>1. Is it true?</strong> ${answers.q1}<br><br>
+                            
+                            <strong>2. Can you absolutely know it's true?</strong> ${answers.q2}<br><br>
+                            
+                            <strong>3. How do you react when you believe that thought?</strong><br>
+                            <em>${answers.q3}</em><br><br>
+                            
+                            <strong>4. Who would you be without that thought?</strong><br>
+                            <em>${answers.q4}</em>
+                        </div>
+                    </div>
+                    
+                    <div class="summary-section">
+                        <h3>Turnarounds</h3>
+                        <div class="summary-content">
+                            ${answers.turnaround1 ? `<strong>To the opposite:</strong> "${answers.turnaround1}"<br>${answers.turnaround1Examples ? `<em>${answers.turnaround1Examples}</em><br><br>` : ''}` : ''}
+                            
+                            ${answers.turnaround2 ? `<strong>To yourself:</strong> "${answers.turnaround2}"<br>${answers.turnaround2Examples ? `<em>${answers.turnaround2Examples}</em><br><br>` : ''}` : ''}
+                            
+                            ${answers.turnaround3 ? `<strong>To the other:</strong> "${answers.turnaround3}"<br>${answers.turnaround3Examples ? `<em>${answers.turnaround3Examples}</em>` : ''}` : ''}
+                        </div>
+                    </div>
+                `;
+            } else if (selectedMethod === 'ifs') {
+                summaryTitle.textContent = "Your IFS Parts Work Summary";
+                summaryContent.innerHTML = `
+                    <div class="summary-section">
+                        <h3>The Part You Worked With</h3>
+                        <div class="summary-content">"${answers.initial}"</div>
+                    </div>
+                    
+                    <div class="summary-section">
+                        <h3>Understanding This Part</h3>
+                        <div class="summary-content">
+                            <strong>How you notice this part:</strong><br>
+                            <em>${answers.ifs2}</em><br><br>
+                            
+                            <strong>How you feel toward this part:</strong><br>
+                            <em>${answers.ifs3}</em><br>
+                            ${answers.ifs3Unblend ? `<strong>Parts that needed to step back:</strong><br><em>${answers.ifs3Unblend}</em><br><br>` : '<br>'}
+                            
+                            <strong>What this part wants you to know:</strong><br>
+                            <em>${answers.ifs4}</em><br><br>
+                            
+                            <strong>What this part is afraid would happen if it wasn't there:</strong><br>
+                            <em>${answers.ifs5}</em><br><br>
+                            
+                            <strong>What this part wants from you in the future:</strong><br>
+                            <em>${answers.ifs6}</em><br><br>
+                            
+                            <strong>What you appreciate about this part:</strong><br>
+                            <em>${answers.ifs7}</em>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        function resetApp() {
+            // Reset all variables
+            selectedMethod = null;
+            currentStep = 1;
+            maxSteps = 6;
+            
+            // Clear answers and history
+            for (let key in answers) {
+                delete answers[key];
+            }
+            stepHistory.length = 0;
+            
+            // Clear and hide elements
+            document.getElementById('dynamicContent').innerHTML = '';
+            document.getElementById('introCard').classList.add('hidden');
+            document.getElementById('progressContainer').classList.add('hidden');
+            document.getElementById('summary').classList.add('hidden');
+            
+            // Show method selector
+            document.getElementById('methodSelector').classList.remove('hidden');
+            
+            // Reset method cards
+            document.getElementById('workCard').classList.remove('selected');
+            document.getElementById('ifsCard').classList.remove('selected');
+            document.getElementById('startBtn').disabled = true;
+        }
+
+        // Initialize
+        updateProgress();
+    </script>
+</body>
+</html>
