@@ -404,6 +404,24 @@
             display: none;
         }
 
+        .belief-reminder {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 12px 16px;
+            margin-bottom: 16px;
+            font-size: 14px;
+            color: #475569;
+            font-style: italic;
+        }
+
+        .belief-reminder-label {
+            font-weight: 600;
+            color: #374151;
+            font-style: normal;
+            margin-bottom: 4px;
+        }
+
         .fade-in {
             animation: fadeIn 0.3s ease;
         }
@@ -621,6 +639,10 @@
         function generateWorkQuestion(num, title, subtitle) {
             return `
                 <div class="step-card active fade-in" id="step${currentStep}">
+                    <div class="belief-reminder">
+                        <div class="belief-reminder-label">Your thought:</div>
+                        "${answers.initial}"
+                    </div>
                     <div class="step-header">
                         <div class="step-number">${currentStep}</div>
                         <div class="step-title">Question ${num}</div>
@@ -640,6 +662,10 @@
         function generateWorkQuestion3() {
             return `
                 <div class="step-card active fade-in" id="step4">
+                    <div class="belief-reminder">
+                        <div class="belief-reminder-label">Your thought:</div>
+                        "${answers.initial}"
+                    </div>
                     <div class="step-header">
                         <div class="step-number">4</div>
                         <div class="step-title">Question 3</div>
@@ -663,6 +689,10 @@
         function generateWorkQuestion4() {
             return `
                 <div class="step-card active fade-in" id="step5">
+                    <div class="belief-reminder">
+                        <div class="belief-reminder-label">Your thought:</div>
+                        "${answers.initial}"
+                    </div>
                     <div class="step-header">
                         <div class="step-number">5</div>
                         <div class="step-title">Question 4</div>
@@ -686,6 +716,10 @@
         function generateWorkTurnarounds() {
             return `
                 <div class="step-card active fade-in" id="step6">
+                    <div class="belief-reminder">
+                        <div class="belief-reminder-label">Your thought:</div>
+                        "${answers.initial}"
+                    </div>
                     <div class="step-header">
                         <div class="step-number">6</div>
                         <div class="step-title">Turnarounds</div>
@@ -753,6 +787,10 @@
         function generateIFSStep2() {
             return `
                 <div class="step-card active fade-in" id="step2">
+                    <div class="belief-reminder">
+                        <div class="belief-reminder-label">The part you're working with:</div>
+                        "${answers.initial}"
+                    </div>
                     <div class="step-header">
                         <div class="step-number">2</div>
                         <div class="step-title">How You Notice This Part</div>
@@ -776,6 +814,10 @@
         function generateIFSStep3() {
             return `
                 <div class="step-card active fade-in" id="step3">
+                    <div class="belief-reminder">
+                        <div class="belief-reminder-label">The part you're working with:</div>
+                        "${answers.initial}"
+                    </div>
                     <div class="step-header">
                         <div class="step-number">3</div>
                         <div class="step-title">How You Feel Toward This Part</div>
@@ -804,6 +846,10 @@
         function generateIFSStep4() {
             return `
                 <div class="step-card active fade-in" id="step4">
+                    <div class="belief-reminder">
+                        <div class="belief-reminder-label">The part you're working with:</div>
+                        "${answers.initial}"
+                    </div>
                     <div class="step-header">
                         <div class="step-number">4</div>
                         <div class="step-title">What This Part Wants You to Know</div>
@@ -827,6 +873,10 @@
         function generateIFSStep5() {
             return `
                 <div class="step-card active fade-in" id="step5">
+                    <div class="belief-reminder">
+                        <div class="belief-reminder-label">The part you're working with:</div>
+                        "${answers.initial}"
+                    </div>
                     <div class="step-header">
                         <div class="step-number">5</div>
                         <div class="step-title">Understanding This Part's Fear</div>
@@ -850,6 +900,10 @@
         function generateIFSStep6() {
             return `
                 <div class="step-card active fade-in" id="step6">
+                    <div class="belief-reminder">
+                        <div class="belief-reminder-label">The part you're working with:</div>
+                        "${answers.initial}"
+                    </div>
                     <div class="step-header">
                         <div class="step-number">6</div>
                         <div class="step-title">What This Part Wants From You</div>
@@ -873,6 +927,10 @@
         function generateIFSStep7() {
             return `
                 <div class="step-card active fade-in" id="step7">
+                    <div class="belief-reminder">
+                        <div class="belief-reminder-label">The part you're working with:</div>
+                        "${answers.initial}"
+                    </div>
                     <div class="step-header">
                         <div class="step-number">7</div>
                         <div class="step-title">Appreciation and Gratitude</div>
