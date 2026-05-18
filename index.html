@@ -68,6 +68,34 @@
         .header p {
             color: #64748b;
             font-size: 14px;
+            margin-bottom: 16px;
+        }
+
+        .lang-selector-container {
+            display: inline-flex;
+            align-items: center;
+            background: #f8fafc;
+            padding: 6px 12px;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .lang-selector-container label {
+            font-size: 14px;
+            font-weight: 500;
+            color: #475569;
+            margin-right: 8px;
+        }
+
+        .lang-select {
+            border: none;
+            background: transparent;
+            font-size: 14px;
+            font-weight: 600;
+            color: #2563eb;
+            cursor: pointer;
+            outline: none;
+            font-family: inherit;
         }
 
         .method-selector {
@@ -475,6 +503,19 @@
         <div class="header">
             <h1>Self-Inquiry Tool</h1>
             <p>Choose your preferred method for exploring thoughts and inner experiences</p>
+            
+            <!-- Language Selector -->
+            <div class="lang-selector-container">
+                <label for="languageSelect">Dictation Language:</label>
+                <select id="languageSelect" class="lang-select">
+                    <option value="en-US">English</option>
+                    <option value="pl-PL">Polski</option>
+                    <option value="es-ES">Español</option>
+                    <option value="de-DE">Deutsch</option>
+                    <option value="fr-FR">Français</option>
+                    <option value="it-IT">Italiano</option>
+                </select>
+            </div>
         </div>
 
         <!-- Method Selection -->
@@ -563,10 +604,27 @@
             }
             const rec = new SpeechRecognition();
             rec.continuous = true;
-            // Setting interim to false prevents stuttering/repeating text when the mic auto-restarts
             rec.interimResults = false; 
+            
+            // Set the language from the dropdown menu
+            const langSelect = document.getElementById('languageSelect');
+            if (langSelect) {
+                rec.lang = langSelect.value;
+            } else {
+                rec.lang = 'en-US';
+            }
+            
             return rec;
         }
+
+        // If the user changes the language while the tool is open, we need to reset the speech recognition object
+        document.getElementById('languageSelect').addEventListener('change', function() {
+            if (isRecording) {
+                stopRecording();
+            }
+            // Destroy the old object so a new one is created with the new language setting next time they click Record
+            speechRec = null; 
+        });
 
         function stopRecording() {
             intentionallyStopped = true; 
