@@ -226,12 +226,50 @@
             margin-bottom: 16px;
         }
 
+        .input-header-flex {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
         .input-label {
-            display: block;
             font-size: 14px;
             font-weight: 500;
             color: #374151;
-            margin-bottom: 8px;
+            margin-bottom: 0;
+        }
+
+        .mic-btn {
+            background: #f1f5f9;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            padding: 4px 10px;
+            font-size: 12px;
+            font-weight: 600;
+            color: #475569;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            transition: all 0.2s;
+        }
+
+        .mic-btn:hover {
+            background: #e2e8f0;
+        }
+
+        .mic-btn.recording {
+            background: #fee2e2;
+            color: #dc2626;
+            border-color: #fca5a5;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.4); }
+            70% { box-shadow: 0 0 0 4px rgba(220, 38, 38, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0); }
         }
 
         .text-input {
@@ -492,6 +530,11 @@
         const answers = {};
         const stepHistory = [];
 
+        // Speech Recognition Variables
+        let speechRec = null;
+        let isRecording = false;
+        let currentActiveMicBtn = null;
+
         const methods = {
             work: {
                 title: "Byron Katie's The Work",
@@ -508,6 +551,90 @@
                 initialPlaceholder: "There's a part of me that gets defensive when criticized..."
             }
         };
+
+        // --- Speech Recognition Logic ---
+        function initSpeech() {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SpeechRecognition) {
+                alert("Speech recognition is not supported in your browser. Please try Chrome, Edge, or Safari.");
+                return null;
+            }
+            const rec = new SpeechRecognition();
+            rec.continuous = true;
+            rec.interimResults = true;
+            return rec;
+        }
+
+        function stopRecording() {
+            if (speechRec && isRecording) {
+                speechRec.stop();
+            }
+            isRecording = false;
+            if (currentActiveMicBtn) {
+                currentActiveMicBtn.classList.remove('recording');
+                currentActiveMicBtn.innerHTML = '🎤 Record';
+                currentActiveMicBtn = null;
+            }
+        }
+
+        function toggleRecording(targetId, btnElement) {
+            // If already recording on this button, stop it
+            if (isRecording && currentActiveMicBtn === btnElement) {
+                stopRecording();
+                return;
+            }
+
+            // If recording on another button, stop that one first
+            if (isRecording) {
+                stopRecording();
+            }
+
+            if (!speechRec) {
+                speechRec = initSpeech();
+                if (!speechRec) return;
+            }
+
+            const targetTextArea = document.getElementById(targetId);
+            let startText = targetTextArea.value;
+            if (startText.length > 0 && !startText.endsWith(' ')) {
+                startText += ' ';
+            }
+
+            speechRec.onstart = function() {
+                isRecording = true;
+                currentActiveMicBtn = btnElement;
+                btnElement.classList.add('recording');
+                btnElement.innerHTML = '🛑 Listening...';
+            };
+
+            speechRec.onresult = function(event) {
+                let interimTranscript = '';
+                let finalTranscript = '';
+
+                for (let i = event.resultIndex; i < event.results.length; ++i) {
+                    if (event.results[i].isFinal) {
+                        finalTranscript += event.results[i][0].transcript;
+                    } else {
+                        interimTranscript += event.results[i][0].transcript;
+                    }
+                }
+                
+                targetTextArea.value = startText + finalTranscript + interimTranscript;
+                targetTextArea.dispatchEvent(new Event('input')); // Trigger validation
+            };
+
+            speechRec.onerror = function(event) {
+                console.error("Speech recognition error:", event.error);
+                stopRecording();
+            };
+
+            speechRec.onend = function() {
+                stopRecording();
+            };
+
+            speechRec.start();
+        }
+        // --------------------------------
 
         function selectMethod(method) {
             selectedMethod = method;
@@ -545,7 +672,10 @@
                         <div class="step-title">Your ${selectedMethod === 'work' ? 'Stressful Thought' : 'Part to Work With'}</div>
                     </div>
                     <div class="input-group">
-                        <label class="input-label">${method.initialPrompt}</label>
+                        <div class="input-header-flex">
+                            <label class="input-label">${method.initialPrompt}</label>
+                            <button class="mic-btn" type="button" onclick="toggleRecording('initialInput', this)">🎤 Record</button>
+                        </div>
                         <textarea 
                             class="text-input text-area" 
                             id="initialInput" 
@@ -573,6 +703,8 @@
         }
 
         function nextStep() {
+            stopRecording(); // ensure mic is off before changing steps
+
             saveCurrentStepData();
             stepHistory.push({
                 step: currentStep,
@@ -675,7 +807,10 @@
                         <div class="question-subtitle">What happens to you? How do you feel? How do you treat yourself and others?</div>
                     </div>
                     <div class="input-group">
-                        <label class="input-label">Your response:</label>
+                        <div class="input-header-flex">
+                            <label class="input-label">Your response:</label>
+                            <button class="mic-btn" type="button" onclick="toggleRecording('q3Response', this)">🎤 Record</button>
+                        </div>
                         <textarea class="text-input text-area" id="q3Response" placeholder="Describe your feelings, behaviors, physical sensations..." rows="4"></textarea>
                     </div>
                     <div class="step-actions">
@@ -702,7 +837,10 @@
                         <div class="question-subtitle">Imagine the situation without this stressful thought. How would you feel? How would you act?</div>
                     </div>
                     <div class="input-group">
-                        <label class="input-label">Your response:</label>
+                        <div class="input-header-flex">
+                            <label class="input-label">Your response:</label>
+                            <button class="mic-btn" type="button" onclick="toggleRecording('q4Response', this)">🎤 Record</button>
+                        </div>
                         <textarea class="text-input text-area" id="q4Response" placeholder="Describe who you would be, how you would feel and act..." rows="4"></textarea>
                     </div>
                     <div class="step-actions">
@@ -729,10 +867,17 @@
                         <div class="turnaround-card">
                             <div class="turnaround-title">Turnaround to the opposite:</div>
                             <div class="input-group">
+                                <div class="input-header-flex">
+                                    <label class="input-label"></label>
+                                    <button class="mic-btn" type="button" onclick="toggleRecording('turnaround1', this)">🎤</button>
+                                </div>
                                 <textarea class="text-input text-area" id="turnaround1" placeholder="Turn your thought to its opposite..." rows="2"></textarea>
                             </div>
                             <div class="input-group">
-                                <label class="input-label">Find 3 genuine examples of how this might be true:</label>
+                                <div class="input-header-flex">
+                                    <label class="input-label">Find 3 genuine examples:</label>
+                                    <button class="mic-btn" type="button" onclick="toggleRecording('turnaround1Examples', this)">🎤</button>
+                                </div>
                                 <textarea class="text-input text-area" id="turnaround1Examples" placeholder="1. &#10;2. &#10;3. " rows="4"></textarea>
                             </div>
                         </div>
@@ -740,21 +885,35 @@
                         <div class="turnaround-card">
                             <div class="turnaround-title">Turnaround to yourself:</div>
                             <div class="input-group">
+                                <div class="input-header-flex">
+                                    <label class="input-label"></label>
+                                    <button class="mic-btn" type="button" onclick="toggleRecording('turnaround2', this)">🎤</button>
+                                </div>
                                 <textarea class="text-input text-area" id="turnaround2" placeholder="Turn it around to yourself..." rows="2"></textarea>
                             </div>
                             <div class="input-group">
-                                <label class="input-label">Find 3 genuine examples:</label>
+                                <div class="input-header-flex">
+                                    <label class="input-label">Find 3 genuine examples:</label>
+                                    <button class="mic-btn" type="button" onclick="toggleRecording('turnaround2Examples', this)">🎤</button>
+                                </div>
                                 <textarea class="text-input text-area" id="turnaround2Examples" placeholder="1. &#10;2. &#10;3. " rows="4"></textarea>
                             </div>
                         </div>
 
                         <div class="turnaround-card">
-                            <div class="turnaround-title">Turnaround to the other person (if applicable):</div>
+                            <div class="turnaround-title">Turnaround to the other person:</div>
                             <div class="input-group">
-                                <textarea class="text-input text-area" id="turnaround3" placeholder="I don't respect my boss..." rows="2"></textarea>
+                                <div class="input-header-flex">
+                                    <label class="input-label"></label>
+                                    <button class="mic-btn" type="button" onclick="toggleRecording('turnaround3', this)">🎤</button>
+                                </div>
+                                <textarea class="text-input text-area" id="turnaround3" placeholder="If applicable..." rows="2"></textarea>
                             </div>
                             <div class="input-group">
-                                <label class="input-label">Find 3 genuine examples:</label>
+                                <div class="input-header-flex">
+                                    <label class="input-label">Find 3 genuine examples:</label>
+                                    <button class="mic-btn" type="button" onclick="toggleRecording('turnaround3Examples', this)">🎤</button>
+                                </div>
                                 <textarea class="text-input text-area" id="turnaround3Examples" placeholder="1. &#10;2. &#10;3. " rows="4"></textarea>
                             </div>
                         </div>
@@ -800,7 +959,10 @@
                         <div class="question-subtitle">Where do you sense this part - in your body, as an image, a voice, a color, or located somewhere around you? How does it show up for you?</div>
                     </div>
                     <div class="input-group">
-                        <label class="input-label">Your response:</label>
+                        <div class="input-header-flex">
+                            <label class="input-label">Your response:</label>
+                            <button class="mic-btn" type="button" onclick="toggleRecording('ifs2Response', this)">🎤 Record</button>
+                        </div>
                         <textarea class="text-input text-area" id="ifs2Response" placeholder="I notice this part as... / I see this part as... / I hear this part..." rows="3"></textarea>
                     </div>
                     <div class="step-actions">
@@ -827,12 +989,19 @@
                         <div class="question-subtitle">Notice if you feel curious, compassionate, calm - or if other feelings come up like frustration, anger, or judgment.</div>
                     </div>
                     <div class="input-group">
-                        <label class="input-label">Your response:</label>
+                        <div class="input-header-flex">
+                            <label class="input-label">Your response:</label>
+                            <button class="mic-btn" type="button" onclick="toggleRecording('ifs3Response', this)">🎤 Record</button>
+                        </div>
                         <textarea class="text-input text-area" id="ifs3Response" placeholder="Toward this part, I feel..." rows="3"></textarea>
                     </div>
                     <div class="ifs-card" style="background: #fef3c7; border-color: #f59e0b;">
                         <div class="ifs-title" style="color: #92400e;">If you notice anything other than curiosity or compassion:</div>
                         <div class="question-subtitle">Ask any judgmental, frustrated, or worried parts if they would be willing to step back so you can get to know this part with more openness.</div>
+                        <div class="input-header-flex">
+                            <label class="input-label"></label>
+                            <button class="mic-btn" type="button" onclick="toggleRecording('ifs3Unblend', this)">🎤 Record</button>
+                        </div>
                         <textarea class="text-input text-area" id="ifs3Unblend" placeholder="Other parts that need to step back..." rows="2"></textarea>
                     </div>
                     <div class="step-actions">
@@ -859,7 +1028,10 @@
                         <div class="question-subtitle">Listen to any message, story, or information this part wants to share with you.</div>
                     </div>
                     <div class="input-group">
-                        <label class="input-label">Your response:</label>
+                        <div class="input-header-flex">
+                            <label class="input-label">Your response:</label>
+                            <button class="mic-btn" type="button" onclick="toggleRecording('ifs4Response', this)">🎤 Record</button>
+                        </div>
                         <textarea class="text-input text-area" id="ifs4Response" placeholder="This part wants me to know..." rows="4"></textarea>
                     </div>
                     <div class="step-actions">
@@ -886,7 +1058,10 @@
                         <div class="question-subtitle">Notice what this part fears would occur if it stopped doing its protective job.</div>
                     </div>
                     <div class="input-group">
-                        <label class="input-label">Your response:</label>
+                        <div class="input-header-flex">
+                            <label class="input-label">Your response:</label>
+                            <button class="mic-btn" type="button" onclick="toggleRecording('ifs5Response', this)">🎤 Record</button>
+                        </div>
                         <textarea class="text-input text-area" id="ifs5Response" placeholder="This part is afraid that if it wasn't there..." rows="4"></textarea>
                     </div>
                     <div class="step-actions">
@@ -913,7 +1088,10 @@
                         <div class="question-subtitle">What would help this part feel supported? What does it need from you going forward?</div>
                     </div>
                     <div class="input-group">
-                        <label class="input-label">Your response:</label>
+                        <div class="input-header-flex">
+                            <label class="input-label">Your response:</label>
+                            <button class="mic-btn" type="button" onclick="toggleRecording('ifs6Response', this)">🎤 Record</button>
+                        </div>
                         <textarea class="text-input text-area" id="ifs6Response" placeholder="This part wants me to..." rows="4"></textarea>
                     </div>
                     <div class="step-actions">
@@ -940,7 +1118,10 @@
                         <div class="question-subtitle">Express genuine gratitude for how this part has tried to help you, even if the methods feel outdated.</div>
                     </div>
                     <div class="input-group">
-                        <label class="input-label">Your response:</label>
+                        <div class="input-header-flex">
+                            <label class="input-label">Your response:</label>
+                            <button class="mic-btn" type="button" onclick="toggleRecording('ifs7Response', this)">🎤 Record</button>
+                        </div>
                         <textarea class="text-input text-area" id="ifs7Response" placeholder="I appreciate this part because..." rows="4"></textarea>
                     </div>
                     <div class="step-actions">
@@ -988,6 +1169,7 @@
         }
 
         function setAnswerAndContinue(step, answer) {
+            stopRecording();
             answers['q' + (step - 1)] = answer;
             
             const yesBtn = document.getElementById('q' + (step - 1) + 'Yes');
@@ -1011,6 +1193,8 @@
         }
 
         function goToPreviousStep() {
+            stopRecording(); // Stop mic when going back
+
             if (stepHistory.length === 0) return;
             
             const previousStep = stepHistory.pop();
@@ -1090,6 +1274,8 @@
         }
 
         function showSummary() {
+            stopRecording();
+
             if (selectedMethod === 'work') {
                 answers.turnaround1 = document.getElementById('turnaround1').value.trim();
                 answers.turnaround1Examples = document.getElementById('turnaround1Examples').value.trim();
@@ -1186,6 +1372,8 @@
         }
 
         function resetApp() {
+            stopRecording();
+
             // Reset all variables
             selectedMethod = null;
             currentStep = 1;
